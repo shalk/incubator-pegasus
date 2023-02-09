@@ -1,0 +1,52 @@
+@startuml
+
+class PegasusClient extends PegasusAbstractClient implements PegasusClientInterface {
+ + PegasusTableInterface openTable(String tableName)
+ + PegasusScannerInterface getScanner(String tableName,byte[] hashKey, byte[] startSortKey,byte[] stopSortKey,ScanOptions options)
+}
+
+abstract class PegasusAbstractClient {
+  - ClientOptions clientOptions
+  - Cluster cluster
+}
+
+class Cluster {
+ + Table openTable(...)
+ + Meta getMeta();
+}
+
+interface PegasusTableInterface {
+    + byte[] get(byte[] hashKey, byte[] sortKey, int timeout /*ms*/)
+    + void set(byte[] hashKey, byte[] sortKey, byte[] value, int timeout /*ms*/)
+    + void del(byte[] hashKey, byte[] sortKey, int timeout /*ms*/)
+}
+
+PegasusAbstractClient ... Cluster
+
+PegasusClient "create" ..> PegasusTable
+PegasusClient "create" ..> PegasusScanner
+
+
+class PegasusTable implements PegasusTableInterface {
+  - Table table
+}
+
+class PegasusScanner implements PegasusScannerInterface {
+ - Table table
+}
+interface PegasusScannerInterface {
+   + T next()
+   + boolean hasNext()
+   + Future<T> asyncNext()
+}
+
+class PegasusAdminClient extends PegasusAbstractClient implements PegasusAdminClientInterface  {
+   - Meta meta
+}
+
+interface PegasusAdminClientInterface {
++ void createApp( String appName,...);
++ void dropApp(String appName);
+}
+
+@enduml
